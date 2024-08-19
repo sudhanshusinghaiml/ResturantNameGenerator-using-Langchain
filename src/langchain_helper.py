@@ -27,37 +27,33 @@ def generate_resturant_name_and_items(cuisine_name):
 
     # Chain 2: Generate menu items
     prompt_template_items = PromptTemplate(
-        input_variables= ["resturant_name"],
-        template= "Suggest some menu items for {resturant_name}. Return it as comma separated field."
+        input_variables= ["restaurant_name"],
+        template= "Suggest some menu items for {restaurant_name}. Return it as comma separated field."
     )
 
     food_items_chain = prompt_template_items | llm | StrOutputParser()
 
     # Create a sequence of these chains
-    # def chain_wrapper(inputs):
-    #     # First, run the name chain
-    #     restaurant_name = name_chain.invoke({"cuisine_name": inputs["cuisine_name"]})
-    #     
-    #     # Use the restaurant name as input for the menu items chain
-    #     menu_items = food_items_chain.invoke({"restaurant_name": restaurant_name})
-    #     
-    #     # Return both outputs
-    #     return {
-    #         "restaurant_name": restaurant_name,
-    #         "menu_items": menu_items
-    #     }
+    def run_sequence(inputs):
+        # First, run the name chain
+        restaurant_name = name_chain.invoke({"cuisine_name": inputs["cuisine_name"]})
+        
+        # Use the restaurant name as input for the menu items chain
+        menu_items = food_items_chain.invoke({"restaurant_name": restaurant_name})
+        
+        # Return both outputs
+        return {
+            "restaurant_name": restaurant_name,
+            "menu_items": menu_items
+        }
 
-    # Create a runnable sequence to execute above wrapper
-    sequential_chain = RunnableSequence(
-        steps=[name_chain, food_items_chain]
-    )
-
-    chain_response = sequential_chain.invoke({"cuisine_name": cuisine_name})
+    chain_response = run_sequence({"cuisine_name": cuisine_name})
     
     return chain_response
 
 
 if __name__ == "__main__":
     response = generate_resturant_name_and_items("Indian")
+    # print(response)
     print("Restaurant Name:", response["restaurant_name"])
     print("Menu Items:", response["menu_items"])
